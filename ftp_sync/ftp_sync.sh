@@ -4,8 +4,8 @@
 login="username"
 pass="password"
 host="ftp_server.domain.com"
-remote_dir="/remote_folder/"
-local_dir="/local_folder/"
+source_dir="/source_folder/"
+target_dir="/target_folder/"
 
 # Uncomment one of this lines depending if you want to upload of download files
 mirror_direction="-R" #from local to remote
@@ -37,7 +37,7 @@ else
     lftp -u $login,$pass $host << EOF
     set ftp:ssl-allow no
     set mirror:use-pget-n 5
-    mirror $mirror_direction $remove_files $exclude_files -P5 --log="/tmp/$base_name.log" "$local_dir" "$remote_dir"
+    mirror $mirror_direction $remove_files $exclude_files -P5 --log="/tmp/$base_name.log" "$source_dir" "$target_dir"
     quit
 
     echo
