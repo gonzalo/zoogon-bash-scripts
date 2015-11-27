@@ -1,0 +1,36 @@
+#!/bin/bash
+
+local_folder="/home/user/local_folder/"
+remote_folder="/home/user/remote_folder" #note the absence of final /
+remote_host=yourhost.com
+remote_user=username
+ssh_port=22 #Default 22. Change only if your are using a non standard ssh port
+
+echo ""
+echo "Rsync trough ssh uploader"
+echo "========================="
+echo "This program uses rysnc and ssh to your push local folder to a remote ssh server"
+echo "Please keep in mind that remote files that not exist locally WILL BE DELETED"
+echo ""
+echo ""
+echo "ORIGIN FOLDER     : $local_folder"
+echo "DESTINATION FOLDER: $remote_folder"
+echo "REMOTE USER       : $remote_user"
+echo "REMOTE HOST       : $remote_host"
+echo "SSH PORT          : $ssh_port"
+echo ""
+read -p "ARE YOU SURE YOU WANT TO OVERWRITE/UPDATE FILES? (y/n) " -n 1 -r
+
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    destination="$remote_user@$remote_host:$remote_folder"
+    rsync_opt=(-avz --delete -e "ssh -p $ssh_port")
+
+    # do some dangerous stuff
+    echo ""
+    echo "Uploading library..."
+    rsync "${rsync_opt[@]}" "${local_folder}" "${destination}"
+    echo ""
+else
+   exit 1
+fi
