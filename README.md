@@ -7,3 +7,5 @@ Collection of bash scripts usefull for admins: sync files, watch logs, ban ips, 
 | rsync_remote   | Mirror/Sync folder over SSH  |
 | transfer       | Share files or directories with just one command line using http://transfer.sh |
 | show_failed_login | Display last ssh failed logins |
+| f2b_status | Fail2Ban status report |
+
