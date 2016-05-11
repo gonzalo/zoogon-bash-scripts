@@ -1,0 +1,57 @@
+#!/bin/sh
+
+# check arguments
+if [ $# -ne 2 ];
+then
+    echo 
+    echo "Illegal number of parameters. Sample of use:"
+    echo 
+    echo "  deploy_git git_directory deploy_directory"
+    echo 
+    exit 1
+fi
+
+git_dir=$1
+web_dir=$2
+
+if [ ! -d "$git_dir" ]; then
+    echo 
+    echo "Git directory $git_dir not found!"
+    echo "Aborting"
+    exit 1
+fi
+
+if [ ! -d "$web_dir" ]; then
+    echo 
+    echo "Deploying directory $web_dir not found!"
+    echo "Aborting"
+    exit 1
+fi
+
+
+echo "Setting maintenance mode"
+cd $web_dir
+php artisan down
+
+echo "Desploying to $web_dir from $git_dir"
+git --work-tree=$web_dir --git-dir=$git_dir checkout -f
+
+# Update dependencies
+echo "Update dependecies if necessary"
+cd $web_dir
+composer install
+
+# Migrate database
+echo "Migrate database"
+cd $web_dir
+php artisan migrate --force
+
+# Fix up permissions.
+echo "Fix up permissions"
+find $web_dir -name storage -prune -o -print0 | xargs -0  chmod g+w
+find $web_dir -name storage -prune -o -print0 | xargs -0  chgrp www-data
+
+echo "Disable manteinance mode"
+cd $web_dir
+php artisan up
+
