@@ -1,0 +1,66 @@
+#!/bin/bash
+
+usb_folder="testin1/"
+local_folder="testin2/"
+remote_folder="/yyy/yyy" #note the absence of final /
+remote_host=xxx.xxx.xxx.xxx
+remote_user=username
+ssh_port=22 #Default 22. Change only if your are using a non standard ssh port
+exclude_pattern="" #none by default. Example "*~"
+
+echo "Rsync local folders and upload to ssh location"
+echo "=============================================="
+echo "This program uses rysnc to sync two folders (for example a usb disk and local folder)"
+echo "then upload contents to a ssh location. Usefull if you combine it with ssh keys"
+echo "Please keep in mind that destination files that not exist in origin WILL BE DELETED"
+
+echo "BE SURE THAT ORIGIN AND DESTINATION FOLDER ARE CORRECT!!!"
+echo ""
+echo "LOCAL FOLDER ORIGIN       : $usb_folder"
+echo "LOCAL FOLDER DESTINATION  : $local_folder"
+echo "REMOTE FOLDER             : $remote_folder"
+echo "REMOTE USER               : $remote_user"
+echo "REMOTE HOST               : $remote_host"
+echo "SSH PORT                  : $ssh_port"
+echo ""
+echo "EXCLUDE PATTERN           : $exclude_pattern"
+
+echo ""
+read -p "Mirror files in $usb_folder to $local_folder? (y/n):" -n 1 -r
+
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    destination="$local_folder"
+    origin="$usb_folder"
+
+    rsync_opt=(-avz --delete-after --exclude ""$exclude_pattern""  )
+
+    # do some dangerous stuff
+    echo
+    echo "Syncing folders..."
+    rsync "${rsync_opt[@]}" "${origin}" "${destination}"
+else
+   echo
+   echo "Skipping local sync..."
+   echo
+fi
+
+echo ""
+read -p "Mirror contents of $local_folder to $remote_user@$remote_host:$remote_folder? (y/n):" -n 1 -r
+
+
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+    destination="$remote_user@$remote_host:$remote_folder"
+    origin=("$local_folder")
+
+    rsync_opt=(-avz --delete-after --exclude ""$exclude_pattern""   -e "ssh -p $ssh_port")
+
+    # do some dangerous stuff
+    echo
+    echo "Uploading contents..."
+    rsync "${rsync_opt[@]}" "${local_folder}" "${destination}"
+else
+   exit 1
+fi
+
