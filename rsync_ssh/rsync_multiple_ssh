@@ -1,0 +1,80 @@
+#!/bin/bash
+
+remote_host=yourhost.com
+remote_user=your_ssh_user
+ssh_port=22 #Default 22. Change only if your are using a non standard ssh port
+exclude_pattern="*~" #none by default. Example "*~"
+
+#array of [origin]=> target
+#supposed remote to local
+#pay attention to slashes "/"
+declare -A targets
+
+targets["/var/remote_folder1/"]="/var/local_folder1"
+targets["/var/remote_folder2/"]="/var/local_folder2"
+targets["/var/remote_folder3/"]="/var/local_folder3"
+
+
+echo "Rsync ssh folder to local"
+echo "=============================================="
+echo "This program uses rysnc to sync an array of pair folders"
+echo "through ssh. Usefull if you combine it with ssh keys"
+echo "Please keep in mind that destination files that not exist in origin WILL BE DELETED"
+
+echo "BE SURE THAT ORIGIN AND DESTINATION FOLDER ARE CORRECT!!!"
+echo ""
+
+for key in "${!targets[@]}"
+do
+   origin=$key
+   destination=${targets[$key]}
+
+   echo "Origin      => $origin"
+   echo "Destination => $destination"
+   echo
+done
+
+echo "REMOTE USER               : $remote_user"
+echo "REMOTE HOST               : $remote_host"
+echo "SSH PORT                  : $ssh_port"
+echo ""
+echo "EXCLUDE PATTERN           : $exclude_pattern"
+
+echo ""
+read -p "Run syncronization? (y/n):" -n 1 -r
+if [[ $REPLY =~ ^[Yy]$ ]]
+then
+
+  for key in "${!targets[@]}"
+  do
+    remote_folder=$key
+    local_folder=${targets[$key]}
+
+    echo ""
+    echo "Mirror contents"
+    echo "Origin      => $remote_user@$remote_host:$remote_folder"
+    echo "Destination => $local_folder"
+    echo
+
+    origin="$remote_user@$remote_host:$remote_folder"
+    destination=("$local_folder")
+
+    # add -n to a dry-run test
+    # -v for verbose
+    rsync_opt=(-az --delete-after --exclude ""$exclude_pattern""   -e "ssh -p $ssh_port")
+
+    # do some dangerous stuff
+    echo
+    echo "Downloading contents..."
+    rsync "${rsync_opt[@]}" "${origin}" "${destination}"
+
+    echo
+
+  done
+
+fi
+
+
+
+
+
