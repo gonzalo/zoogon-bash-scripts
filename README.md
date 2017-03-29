@@ -9,5 +9,5 @@ Collection of bash scripts usefull for admins: sync files, watch logs, ban ips, 
 | show_failed_login | Display last ssh failed logins |
 | f2b_status | Fail2Ban status report |
 | deploy_git | Scritp to deploy laravel application from git repository |
-
+| ocr | Use OCR over a group of tif files and turn into readeable pdf |
 

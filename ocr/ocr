@@ -1,0 +1,48 @@
+#!/bin/bash
+
+# OCR script
+# Explore current directory analyzing all tif files, generating multiple pdf
+# and mergin them into a final "output.pdf" file
+# also generates txt file if asked
+
+# Needs tesseract-ocr packages
+# and dessired lang packages: tesseract-ocr-cat tesseract-ocr-es...
+# needs pdfunite command (poppler-utils package)
+
+# Initialize our own variables:
+output_file="ouput"
+verbose='2>/dev/null'
+language="eng"
+txt_file=false
+
+while getopts "f:l:t" opt; do
+    case "$opt" in
+    f)  output_file=$OPTARG
+        ;;
+    l)  language=$OPTARG
+        ;;
+    t)  txt_file=true
+	;;
+    esac
+done
+
+echo "Doing OCR..."
+find . -maxdepth 1 -name "*.tif" -print0 | while IFS= read -r -d '' n; do 
+    echo "$n"
+    tesseract "$n" "$n" -l $language pdf 2>/dev/null
+done
+
+echo "Mergin pdfs"
+rm $output_file.pdf 2>/dev/null
+pdfunite *pdf $output_file.pdf
+echo "$output_file.pdf generated"
+
+echo "Removing temporary pdf files..."
+find . -type f -name '*tif.pdf' -not -name $output_file.pdf -delete
+
+if $txt_file; then
+ echo "Converting to txt..."
+ pdftotext $output_file.pdf
+ echo "$output_file.txt generated"
+fi
+
