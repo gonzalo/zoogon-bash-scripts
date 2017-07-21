@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Shrink all pdfs in folder and extract first page as jpg
+
+# 1. Extract basename of pdf files
+# 2. Generates a new foder with that basename
+# 3. Generates a reduced pdf into that folder
+# 4. Extract first page and generates a jpg image 1600px into that folder
+
+
+for file in *.pdf
+do
+  filename=$(basename "$file")
+  extension="${filename##*.}"
+  filename="${filename%.*}"
+  mkdir $filename
+  gs -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/ebook -sOutputFile=$filename/$filename\-reduced.pdf $file
+  convert -density 144 -resize 1600x1600 $file[0] $filename/$filename.jpg
+done
+
