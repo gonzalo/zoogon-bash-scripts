@@ -1,0 +1,75 @@
+#!/bin/bash
+
+# set user and group recursively for a directory
+# Default permissions are 755 for directories and 644 for files
+
+# check if root
+if [ $EUID -ne 0 ]; 
+then
+   echo "This script must be run as root" 1>&2
+   exit 1
+fi
+
+# check arguments
+if [ $# -eq 3 ];
+then
+    directory=$1
+    user=$2
+    group=$3
+    dir_permissions='0755'
+    file_permissions='0644'
+elif [ $# -eq 4 ];
+then
+    directory=$1
+    user=$2
+    group=$3
+    dir_permissions=$4
+    file_permissions=$5
+else
+    echo 
+    echo "Illegal number of parameters. Sample of use:"
+    echo 
+    echo "  fix_web_permissions directory user group [dir_permissions file_permissions]"
+    echo 
+    echo "  If not set default permissions are set to 0755 and 0644"
+    exit 1
+fi
+
+
+
+# check directory
+if [ ! -d "$directory" ]; then
+    echo 
+    echo "$diretory not found!"
+    exit 1
+fi
+
+# check user
+if id "$user" >/dev/null 2>&1; 
+then
+	echo "$user is a valid user"
+else
+        echo "$user does not exist"
+	exit 1
+fi
+
+# check group
+if grep -q "^${group}:" /etc/group;
+then
+	echo "$group is a valid group"
+else
+        echo "$group does not exist"
+	exit 1
+fi
+
+#fix owners
+echo "Chowning with $user:$group"
+chown $user:$group -R "$directory"
+
+#fix permissions
+echo "Setting directories permissions to $dir_permissions"
+find "$directory" -type d -exec chmod $dir_permissions {} \;
+echo "Setting file permissions to $file_permissions"
+find "$directory" -type f -exec chmod $file_permissions {} \;
+
+
